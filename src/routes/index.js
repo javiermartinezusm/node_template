@@ -24,6 +24,7 @@ router.post('/api/get-promotion',(ctx, next) => {
         'cart_id' : ctx.body['cart_id'],
         'details' : []
     }
+    let input_error=0
     for (let i = 0; i < ctx.body['items'].length; i++) {
         let item = ctx.body['items'][i];
         let total_price =0;
@@ -44,14 +45,30 @@ router.post('/api/get-promotion',(ctx, next) => {
             total_price=item['amount']*(1-promotion_rules[1]['discount_percentage']/100)*item['unit_base_price']
             promotion_applied = 'true'
         }
-        else{
+        else if(item['promotion']==""){
             total_price=item['amount']*item['unit_base_price']
             promotion_applied = 'false'
         }
+        else{
+            input_error=1
+            break
+        }
+        if(total_price<=0){
+            input_error=2
+            break
+        }
         aux['details'].push({'item_id': item['item_id'], 'amount' : item['amount'], 'total_price' : total_price, 'promotion_applied': promotion_applied})
     }
-    ctx.body=aux;
-    ctx.status=200;
+    if(input_error==0){
+        ctx.body=aux;
+        ctx.status=200;
+    } else if (input_error==1){
+        ctx.status=400
+        ctx.body={'status' : 'NOK', 'error_message': "RULE DOES NOT EXIST"}
+    } else if (input_error==2){
+        ctx.status=400
+        ctx.body={'status' : 'NOK', 'error_message': "AMOUNT OR PRICE SHOULD BE GREATER THAN ZERO"}
+    }
     return ctx
   })
 export default router
