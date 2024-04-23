@@ -38,7 +38,7 @@ router.post('/api/get-promotion',(ctx, next) => {
             if(!item['item_id']){
                 input_error=3
                 break
-            } else if(!item['promotion']){
+            } else if(item['promotion']===undefined){
                 input_error=3
                 break
             } else if(!item['amount']){
